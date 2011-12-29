@@ -14,7 +14,7 @@ PhaseCounter swpTrigger, swpTrigger2;
 
 Sequencer seq, bass;
 
-// Sublime Loop (See http://sublimeloop.com for details )
+// Sublime Loop (See http://www.sublimeloop.com/ for details )
 int notes[64] = {50,53,50,53, 52,55,52,55, 48,52,48,52, 50,54,50,54, 
                  50,53,50,53, 52,55,52,55, 48,52,48,52, 50,54,50,54,
                  50,53,50,53, 52,55,52,55, 48,52,48,52, 50,54,50,54,                 
