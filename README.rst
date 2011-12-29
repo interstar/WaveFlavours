@@ -14,6 +14,6 @@ Running
 -------
 At the moment, the code is designed to work with the Maximilian project ( https://github.com/micknoise/Maximilian ). So start by cloning that project or my fork ( https://github.com/interstar/Maximilian ). Then copy all files from this project directly into the same directory. (Not elegant, but it will do for now. I'll work out something a bit tidier shortly, probably keeping Maximilian in a submodule.)
 
-Follow the instructions for command-line compiling on the Maximilian site.
+Follow the instructions for command-line compiling in the README of Maximilian. ( https://github.com/micknoise/Maximilian/blob/master/README )
 
 
