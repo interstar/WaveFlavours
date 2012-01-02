@@ -50,7 +50,7 @@ class Voice {
         int pitchOffsets[10];
         float volume;
         
-        int noVoices,note;
+        int noVoices,note,globalPitchOffset;
         
         
         void start(WaveTable* table, int noVoices, int* pitchOffsets, float freq);

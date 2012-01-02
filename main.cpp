@@ -29,20 +29,22 @@ int bassNotes[16] = {46, 48, 45, 42,
 };
 */
 
-int notes[8][2] = { {50,96},
+// new test chords / seq
+int notes[9][2] = { {50,96},
                     {53,48},
                     {55,96},
                     {56,48},
                     {57,96},
                     {59,48},
                     {60,48},
-                    {61,48} };
+                    {61,48},
+                    {62,96} };
 
 int chordOffs[4]={0,3,7,10};                    
 int bassNotes[4][2] = { {50,192},
-                   {58,192},
-                   {56,192},
-                   {61,192} };
+                   {52,192},
+                   {57,192},
+                   {52,192} };
 
 
 maxiEnv env, envBass;
@@ -56,7 +58,7 @@ void setup() {//some inits
     wave1.startSin();
     wave2.startSin();
     wave1.setReverseParams(0,9987);
-    wave1.setInvertParams(0,701);
+    wave1.setInvertParams(1,7001);
     
     wave3.startRamp();
     wave4.startSin();
@@ -71,6 +73,7 @@ void setup() {//some inits
     
     v1.start(&wave1,1,norm,50);
     v1.setPitch(0);
+    v1.globalPitchOffset = -12;
     v1.volume = 0.8;
     v1.offsetter.dx = 0.02;
 

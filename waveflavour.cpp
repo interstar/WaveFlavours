@@ -108,6 +108,7 @@ void Voice::start(WaveTable* table, int nv, int* pOffs, float freq) {
     }
     offsetter.start(0,TABLE_LEN);
     volume=1;
+    globalPitchOffset = 0;
 }
 
 float calculatePitch(int n) {
@@ -119,7 +120,7 @@ float calculatePitch(int n) {
 void Voice::setPitch(int n) {
     note = n;
     for (int i=0;i<noVoices;i++) {
-        p[i].dx=calculatePitch(n+pitchOffsets[i]);
+        p[i].dx=calculatePitch(n+pitchOffsets[i]+globalPitchOffset);
     }
 }
 
