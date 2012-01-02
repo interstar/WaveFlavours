@@ -3,6 +3,12 @@
 #define TABLE_LEN 512
 #define GENEROUS_TABLE_LEN 514
 
+typedef struct {
+    int note;
+    int duration;
+} Note;
+
+
 class PhaseCounter {
     public :
         float x, oldX, dx, max;
@@ -40,25 +46,31 @@ class WaveTable {
 class Voice {
     public :
         WaveTable* table;
-        PhaseCounter p, offsetter;
+        PhaseCounter p[10], offsetter;
+        int pitchOffsets[10];
         float volume;
         
-        int note;
+        int noVoices,note;
         
-        void start(WaveTable* table, float freq);
+        
+        void start(WaveTable* table, int noVoices, int* pitchOffsets, float freq);
         void setPitch(int note);
         double next();
+        
+        
 };
+
         
 class Sequencer {
     public :
         PhaseCounter tick;
         PhaseCounter noteTrigger;
-        int len;
-        int* notes;
-        int currentNote;
+        int len,speed;
+        Note* notes;
+        int currentNote,currentDuration;
+        
         bool trigger;
-        void start(int l, int* n, int speed);
+        void start(int l, int n[][2], int speed);
         void step();
         void advanceNote();
 };

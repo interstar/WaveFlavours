@@ -25,9 +25,10 @@ bool PhaseCounter::wrapped() {
 
 int PhaseCounter::next() {
     oldX = x;
-    if (x < 0) { x = 0; }
-    if (x > max) { x = 0; }
     x = x + dx;
+
+    if (x < 0) { x = 0; }
+    if (x >= max) { x = 0; }
     return (int)x;
 }
 
@@ -98,41 +99,70 @@ void WaveTable::swap(WaveTable* other, int c) {
     other->wave[c]=tmp;
 }
 
-void Voice::start(WaveTable* table, float freq) {
+void Voice::start(WaveTable* table, int nv, int* pOffs, float freq) {
     this->table = table;
-    p.start(freq,TABLE_LEN);
+    noVoices = nv;
+    for (int i=0;i<noVoices;i++) {
+        p[i].start(freq,TABLE_LEN);
+        pitchOffsets[i]=pOffs[i];    
+    }
     offsetter.start(0,TABLE_LEN);
     volume=1;
 }
 
-void Voice::setPitch(int n) {
-    note = n;
+float calculatePitch(int n) {
     float freq = mtof.mtof(n);
     float x = 44100/freq;
-    p.dx=TABLE_LEN/x;
+    return TABLE_LEN/x;
+}
+
+void Voice::setPitch(int n) {
+    note = n;
+    for (int i=0;i<noVoices;i++) {
+        p[i].dx=calculatePitch(n+pitchOffsets[i]);
+    }
 }
 
 double Voice::next() {
-    int c = p.next();
     int offset = offsetter.next();
-    int oset = (c+offset)%TABLE_LEN;
-    return volume*((table->wave[c] + table->wave[oset])/2);
+    double vTot=0;
+    for (int i=0;i<noVoices;i++) {
+        int c = p[i].next();
+        int oset = (c+offset)%TABLE_LEN;
+        vTot = vTot + ((table->wave[c]+table->wave[oset])/2);
+    }        
+    return volume*vTot/noVoices;
 }
 
 
-void Sequencer::start(int l, int* n, int speed) {
-    tick.start(1,speed);
-    noteTrigger.start(1,l);
-    this->notes = n;
+void Sequencer::start(int l, int n[][2], int s) {
+    printf("Starting sequencer\n");
+    len = l;
+    speed = s;
+    printf("Len: %d, Speed: %d\n",len,speed);
+    
+    notes = new Note[len];
+    for (int i=0;i<len;i++) {
+        notes[i].note = n[i][0];
+        notes[i].duration = n[i][1];
+        printf("%d) %d,%d\n",i,notes[i].note,notes[i].duration);
+    }
+
     trigger=1;
-    currentNote = notes[0];
+    currentNote = notes[0].note;
+    currentDuration = notes[0].duration;
+
+    noteTrigger.start(1,len);
+    noteTrigger.x = noteTrigger.max;
+    tick.start(1,speed*currentDuration);
+    printf("Sequencer started with speed: %d, note: %d and duration: %d, %d\n",speed,currentNote,currentDuration,tick.max);
 }
         
 void Sequencer::step() {
     tick.next();
     if (tick.wrapped()) {
-        int c = noteTrigger.next();
-        currentNote = notes[c-1];
+        printf("*");
+        advanceNote();        
         trigger = true;
     } else {
         trigger = false;
@@ -141,7 +171,10 @@ void Sequencer::step() {
 
 void Sequencer::advanceNote() {
     int c = noteTrigger.next();
-    currentNote = notes[c-1];
+    currentNote = notes[c].note;
+    currentDuration = notes[c].duration;
+    printf("%d: %d, %d\n",c,currentNote,currentDuration);
+    tick.start(1,speed*currentDuration);
 }
 
 
