@@ -1,5 +1,6 @@
 #include "maximilian.h"
 #include "waveflavour.h"
+#include "sequence.h"
 
 #include <math.h>
 #include <stdio.h>
