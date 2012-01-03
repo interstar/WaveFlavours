@@ -4,15 +4,7 @@
 #include <math.h>
 #include <stdio.h>
 
-WaveTable wave1, wave2, wave3, wave4;
-Voice v1,v2,v3;
-
 bool flag = true;
-
-int swp,swp2;
-PhaseCounter swpTrigger, swpTrigger2;
-
-Sequencer seq, bass;
 
 // Sublime Loop (See http://www.sublimeloop.com/ for details )
 /*
@@ -49,11 +41,27 @@ int bassNotes[4][2] = { {50,192},
                    {57,192},
                    {52,192} };
 
+int highNotes[16][2] = { {100,24},
+                       {100,24},
+                       {100,24},
+                       {88,24},
+                       {100,24},
+                       {100,24},
+                       {100,24},
+                       {88,24},
+                       {100,24},
+                       {100,24},
+                       {100,24},
+                       {88,24},
+                       {100,24},
+                       {100,24},
+                       {88,24},
+                       {100,24} };
 
-Instrument inChords, inSolo;
 
-maxiEnv env, envBass;
-maxiDelayline delay;
+Sequencer seq, bass, hat;
+
+Instrument inChords, inSolo, inHat;
 
 int norm[1]={0};
 
@@ -62,7 +70,7 @@ void setup() {//some inits
     printf("start\n");
     
     inChords.start(SIN,RAMP,4,chordOffs);
-    inChords.setParams(0,9987,1,7001,1,90001,0.02,0);
+    inChords.setParams(1,9987,1,7001,1,90001,0.02,0);
     inChords.setEnv(0.5, 0.999975, 5000);
     inChords.voice.volume = 1.1;
         
@@ -70,11 +78,18 @@ void setup() {//some inits
     inSolo.setParams(0,9987,1,7001,0,1001,0,-12);
     inSolo.setEnv(0.05, 0.909975, 5000);
     inSolo.voice.volume = 0.5;
+    
+    inHat.start(SIN,RAMP,1,norm);
+    inHat.setParams(1,48,1,19999,1,1000,0.1,0);
+    inHat.setEnv(0.01, 0.99, 1000);
          
     seq.start(11,notes,250);
     bass.start(4,bassNotes,250);
+    hat.start(16,highNotes,250);
+    
     seq.advanceNote();
     bass.advanceNote();
+    hat.advanceNote();
  
     flag = false;
 }
@@ -82,11 +97,15 @@ void setup() {//some inits
 void play(double *output) { 
     if (flag) { setup(); }
 
-    double o,o2;
+    double o,o2,o3;
     o = inChords.next(bass.currentNote,bass.trigger);
     o2 = inSolo.next(seq.currentNote,seq.trigger);
-	output[0]=(o+o2)/2;
-	output[1]=(o+o2)/2;	
+    o3 = inHat.next(hat.currentNote,hat.trigger);
+    
+	output[0]=(o+o2+o3)/3;
+	output[1]=(o+o2+o3)/3;	
+	
     seq.step();
     bass.step();
+    hat.step();
 }
