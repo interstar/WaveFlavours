@@ -30,7 +30,7 @@ int bassNotes[16] = {46, 48, 45, 42,
 */
 
 // new test chords / seq
-int notes[9][2] = { {50,96},
+int notes[11][2] = { {50,96},
                     {53,48},
                     {55,96},
                     {56,48},
@@ -38,7 +38,10 @@ int notes[9][2] = { {50,96},
                     {59,48},
                     {60,48},
                     {61,48},
-                    {62,96} };
+                    {62,96}, 
+                    {67,48},
+                    {65,96}
+                    };
 
 int chordOffs[4]={0,3,7,10};                    
 int bassNotes[4][2] = { {50,192},
@@ -46,6 +49,8 @@ int bassNotes[4][2] = { {50,192},
                    {57,192},
                    {52,192} };
 
+
+Instrument inChords, inSolo;
 
 maxiEnv env, envBass;
 maxiDelayline delay;
@@ -55,33 +60,19 @@ int norm[1]={0};
 void setup() {//some inits
 
     printf("start\n");
-    wave1.startSin();
-    wave2.startSin();
-    wave1.setReverseParams(0,9987);
-    wave1.setInvertParams(1,7001);
     
-    wave3.startRamp();
-    wave4.startSin();
-    wave3.setReverseParams(1,1001);
-    wave4.setInvertParams(1,3000);
+    inChords.start(SIN,RAMP,4,chordOffs);
+    inChords.setParams(0,9987,1,7001,1,90001,0.02,0);
+    inChords.setEnv(0.5, 0.999975, 5000);
+    inChords.voice.volume = 1.1;
         
-    swpTrigger.start(0,1001);
-    swp=0;
-
-    swpTrigger2.start(0,1001);
-    swp2=0;
-    
-    v1.start(&wave1,1,norm,50);
-    v1.setPitch(0);
-    v1.globalPitchOffset = -12;
-    v1.volume = 0.8;
-    v1.offsetter.dx = 0.02;
-
-    v2.start(&wave3,4,chordOffs,46);
-    v2.setPitch(0);
-     
-    seq.start(8,notes,300);
-    bass.start(4,bassNotes,300);
+    inSolo.start(SIN,SIN,1,norm);
+    inSolo.setParams(0,9987,1,7001,0,1001,0,-12);
+    inSolo.setEnv(0.05, 0.909975, 5000);
+    inSolo.voice.volume = 0.5;
+         
+    seq.start(11,notes,250);
+    bass.start(4,bassNotes,250);
     seq.advanceNote();
     bass.advanceNote();
  
@@ -91,55 +82,11 @@ void setup() {//some inits
 void play(double *output) { 
     if (flag) { setup(); }
 
-    if (seq.trigger) {
-        int nv = seq.currentNote;
-        v1.setPitch(nv);
-    }    
-
-    
-    if (bass.trigger) {
-        int nv = bass.currentNote;
-        v2.setPitch(nv);
-    }    
-
-
-	double o,o2;
-	o = v1.next();
-	o = env.ar(o, 0.05, 0.9975, 5000, seq.trigger);
-	//o = delay.dl(o, 20000, 0.9);
-	
-
-	o2 = v2.next();
-	o2 = envBass.ar(o2, 0.05, 0.999975, 5000, bass.trigger);
+    double o,o2;
+    o = inChords.next(bass.currentNote,bass.trigger);
+    o2 = inSolo.next(seq.currentNote,seq.trigger);
 	output[0]=(o+o2)/2;
 	output[1]=(o+o2)/2;	
-
-    wave1.reverse();
-    wave1.invert();
-
-    wave3.reverse();
-    wave3.invert();
-
-    swpTrigger.next();    
-    if (swpTrigger.wrapped()) {
-
-        wave1.swap(&wave2,swp);
-        swp++;
-        if (swp > wave1.len) {
-            swp=0;    
-        }
-    }
-
-    swpTrigger2.next();
-    if (swpTrigger2.wrapped()) {
-        wave3.swap(&wave4,swp2);
-        swp2++;
-        if (swp2 > wave3.len) {
-            swp2=0;    
-        }
-    }
-
     seq.step();
     bass.step();
-
 }

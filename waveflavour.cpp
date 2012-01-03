@@ -6,6 +6,8 @@
 
 convert mtof;
 
+// __PhaseCounter__________________________________________________________________________
+//
 void PhaseCounter::start(float d, float m) {
     x=0;
     oldX = 0;
@@ -34,7 +36,8 @@ int PhaseCounter::next() {
 
 
 
-
+// __WaveTable_________________________________________________________________________
+//
 void WaveTable::startCommon() {
     len=TABLE_LEN;
     iRev = 0;
@@ -58,10 +61,9 @@ void WaveTable::startRamp() {
     }    
 }
 
-void WaveTable::startSin() {
+void WaveTable::startSin(float a) {
     startCommon();
-    float a,da;
-    a=0;
+    float da;
     da = (3.1415*2)/len;
     for (int i=0;i<len;i++) {
         wave[i] = sin(a);
@@ -99,6 +101,8 @@ void WaveTable::swap(WaveTable* other, int c) {
     other->wave[c]=tmp;
 }
 
+// __Voice_____________________________________________________________________
+//
 void Voice::start(WaveTable* table, int nv, int* pOffs, float freq) {
     this->table = table;
     noVoices = nv;
@@ -135,7 +139,58 @@ double Voice::next() {
     return volume*vTot/noVoices;
 }
 
+// __Instrument_____________________________________________________________________________
+//
+void Instrument::start(int waveform1, int waveform2, int noVoices, int* pitchOffsets) {
+    if (waveform1 == SIN) {
+        table1.startSin(0);
+    } else {
+        table1.startRamp();
+    }
+    if (waveform2 == SIN) {
+        table2.startSin(3.1415/4);
+    } else {
+        table2.startRamp();
+    }
+    voice.start(&table1, noVoices, pitchOffsets,0);
+}
 
+void Instrument::setParams(int revInc, int reverse, int invInc, int invert, int swapInc, int swap, float dPhase, int globalPitchOffset) {
+    table1.setReverseParams(revInc,reverse);
+    table1.setInvertParams(invInc,invert);
+    voice.globalPitchOffset = globalPitchOffset;
+    voice.offsetter.dx = dPhase;
+    swapIndex = 0;
+    swapTrigger.start(swapInc,swap);
+}
+
+void Instrument::setEnv(float attack, float release, float sustain) {
+    envAttack = attack;
+    envRelease = release;
+    envSustain = sustain;
+}
+
+double Instrument::next(int pitch, int trigger) {
+    if (trigger) {
+        voice.setPitch(pitch);
+    }
+    double o = env.ar(voice.next(),envAttack,envRelease,envSustain,trigger);
+
+    table1.reverse();
+    table1.invert();
+    swapTrigger.next();
+    if (swapTrigger.wrapped()) {
+        table1.swap(&table2,swapIndex);
+    }
+    swapIndex++;
+    if (swapIndex > table1.len) {
+        swapIndex = 1;
+    }
+    return o;
+}
+    
+// __Sequencer______________________________________________________________________________
+//
 void Sequencer::start(int l, int n[][2], int s) {
     printf("Starting sequencer\n");
     len = l;
