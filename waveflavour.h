@@ -7,6 +7,7 @@
 
 #define SIN -100
 #define RAMP -99
+#define SQUARE -98
 
 
 class PhaseCounter {
@@ -33,6 +34,7 @@ class WaveTable {
         void startCommon();
         void startRamp();
         void startSin(float a);
+        void startSquare();
         
         void setReverseParams(int dRev, int fRev);
         void setInvertParams(int dInv, int fInv);

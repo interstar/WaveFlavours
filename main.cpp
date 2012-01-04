@@ -73,7 +73,8 @@ Instrument inChords, inSolo, inHat;
 
 int norm[1]={0};
 
-void setup() {//some inits
+void setup() {
+    //some inits
 
     printf("start\n");
     

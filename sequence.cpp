@@ -32,7 +32,6 @@ void Sequencer::start(int l, int n[][2], int s) {
 void Sequencer::step() {
     tick.next();
     if (tick.wrapped()) {
-        printf("*");
         advanceNote();        
         trigger = true;
     } else {
@@ -44,7 +43,6 @@ void Sequencer::advanceNote() {
     int c = noteTrigger.next();
     currentNote = notes[c].note;
     currentDuration = notes[c].duration;
-    printf("%d: %d, %d\n",c,currentNote,currentDuration);
     tick.start(1,speed*currentDuration);
 }
 

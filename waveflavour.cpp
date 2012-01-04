@@ -71,6 +71,13 @@ void WaveTable::startSin(float a) {
     }    
 }
 
+void WaveTable::startSquare() {
+    startCommon();
+    for (int i=0;i<len;i++) {
+        wave[i] = i < len/2?-1:1;
+    }
+}
+
 void WaveTable::reverse() { 
     double tmp;
     revTrigger.next();
@@ -142,16 +149,30 @@ double Voice::next() {
 // __Instrument_____________________________________________________________________________
 //
 void Instrument::start(int waveform1, int waveform2, int noVoices, int* pitchOffsets) {
-    if (waveform1 == SIN) {
-        table1.startSin(0);
-    } else {
-        table1.startRamp();
+    switch (waveform1) {
+        case SIN:
+            table1.startSin(0);
+            break;
+        case RAMP:
+            table1.startRamp();
+            break;
+        case SQUARE:
+            table1.startSquare();
+            break;
     }
-    if (waveform2 == SIN) {
-        table2.startSin(3.1415/4);
-    } else {
-        table2.startRamp();
+    
+    switch (waveform2) {
+        case SIN:
+            table2.startSin(0);
+            break;
+        case RAMP:
+            table2.startRamp();
+            break;
+        case SQUARE:
+            table2.startSquare();
+            break;
     }
+        
     voice.start(&table1, noVoices, pitchOffsets,0);
 }
 
