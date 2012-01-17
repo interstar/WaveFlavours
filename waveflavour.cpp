@@ -25,12 +25,13 @@ bool PhaseCounter::wrapped() {
     return false;
 }
 
+//  FIXME: Return phase accumulator as a float to enable interpolation.
 int PhaseCounter::next() {
     oldX = x;
     x = x + dx;
 
     if (x < 0) { x = 0; }
-    if (x >= max) { x = 0; }
+    x = fmodf(x, max);
     return (int)x;
 }
 
